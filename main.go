@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -83,22 +82,22 @@ func sendStatus(cfg config) error {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		debug(httputil.DumpRequestOut(resp, true))
+		debug(httputil.DumpResponse(resp, true))
 		return fmt.Errorf("failed to send the request: %s", err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		debug(httputil.DumpRequestOut(resp, true))
+		debug(httputil.DumpResponse(resp, true))
 		return err
 	}
 
 	if err := resp.Body.Close(); err != nil {
-		debug(httputil.DumpRequestOut(resp, true))
+		debug(httputil.DumpResponse(resp, true))
 		return err
 	}
 	if 200 > resp.StatusCode || resp.StatusCode >= 300 {
-		debug(httputil.DumpRequestOut(resp, true))
+		debug(httputil.DumpResponse(resp, true))
 		return fmt.Errorf("server error: %s url: %s code: %d body: %s", resp.Status, url, resp.StatusCode, string(body))
 	}
 
