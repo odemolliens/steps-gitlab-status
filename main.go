@@ -108,7 +108,7 @@ func debug(data []byte, err error) {
     if err == nil {
         fmt.Printf("%s\n\n", data)
     } else {
-        log.Warnf("%s\n\n", err)
+        log.Errorf("%s\n\n", err)
     }
 }
 
