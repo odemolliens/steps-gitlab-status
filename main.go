@@ -74,30 +74,27 @@ func sendStatus(cfg config) error {
 
 	url := fmt.Sprintf("%s/projects/%s/statuses/%s", cfg.APIURL, repo, cfg.CommitHash)
 	req, err := http.NewRequest("POST", url, strings.NewReader(form.Encode()))
+	debug(httputil.DumpRequestOut(req, true))
 	if err != nil {
-		debug(httputil.DumpRequestOut(req, true))
 		return err
 	}
 	req.Header.Add("PRIVATE-TOKEN", cfg.PrivateToken)
 
 	resp, err := http.DefaultClient.Do(req)
+	debug(httputil.DumpResponse(resp, true))
 	if err != nil {
-		debug(httputil.DumpResponse(resp, true))
 		return fmt.Errorf("failed to send the request: %s", err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		debug(httputil.DumpResponse(resp, true))
 		return err
 	}
 
 	if err := resp.Body.Close(); err != nil {
-		debug(httputil.DumpResponse(resp, true))
 		return err
 	}
 	if 200 > resp.StatusCode || resp.StatusCode >= 300 {
-		debug(httputil.DumpResponse(resp, true))
 		return fmt.Errorf("server error: %s url: %s code: %d body: %s", resp.Status, url, resp.StatusCode, string(body))
 	}
 
