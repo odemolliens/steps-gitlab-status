@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"regexp"
@@ -74,28 +76,41 @@ func sendStatus(cfg config) error {
 	url := fmt.Sprintf("%s/projects/%s/statuses/%s", cfg.APIURL, repo, cfg.CommitHash)
 	req, err := http.NewRequest("POST", url, strings.NewReader(form.Encode()))
 	if err != nil {
+		debug(httputil.DumpRequestOut(req, true))
 		return err
 	}
 	req.Header.Add("PRIVATE-TOKEN", cfg.PrivateToken)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		debug(httputil.DumpRequestOut(resp, true))
 		return fmt.Errorf("failed to send the request: %s", err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		debug(httputil.DumpRequestOut(resp, true))
 		return err
 	}
 
 	if err := resp.Body.Close(); err != nil {
+		debug(httputil.DumpRequestOut(resp, true))
 		return err
 	}
 	if 200 > resp.StatusCode || resp.StatusCode >= 300 {
+		debug(httputil.DumpRequestOut(resp, true))
 		return fmt.Errorf("server error: %s url: %s code: %d body: %s", resp.Status, url, resp.StatusCode, string(body))
 	}
 
 	return err
+}
+
+func debug(data []byte, err error) {
+    if err == nil {
+        fmt.Printf("%s\n\n", data)
+    } else {
+        log.Fatalf("%s\n\n", err)
+    }
 }
 
 func main() {
